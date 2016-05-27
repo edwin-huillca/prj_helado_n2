@@ -1,4 +1,4 @@
-var skipRegister = false, currentMain = 0, token = '', salt = CryptoJS.lib.WordArray.random(256/8), iv = CryptoJS.lib.WordArray.random(128 / 8), key = CryptoJS.PBKDF2('S3cr3t0..2016@@', salt, { iterations: 10, hasher:CryptoJS.algo.SHA256}), socket, liststores, mylat, mylon;
+var skipRegister = false, currentMain = 0, token = '', salt = CryptoJS.lib.WordArray.random(256/8), iv = CryptoJS.lib.WordArray.random(128 / 8), key = CryptoJS.PBKDF2('S3cr3t0..2016@@', salt, { iterations: 10, hasher:CryptoJS.algo.SHA256}), socket, liststores, mylat, mylon, validate = false;
 // Ionic Starter App
 
 // angular.module is a global place for creating, registering and retrieving Angular modules
@@ -54,11 +54,6 @@ angular.module('app', ['ionic', 'ngCordova', 'ngCookies', 'app.controllers', 'ap
     $http.post(link, {
       uuid: $cordovaDevice.getUUID()
       }).then(function (res){
-        $('#loading').hide();
-        $('#btnFbConnect').show();
-        //$ionicLoading.hide();
-        console.log(res);
-        //$scope.response = res.data.response;
         if(res.data.response == 1){
           token = res.data.token;
           console.log(skipRegister);
@@ -92,6 +87,7 @@ angular.module('app', ['ionic', 'ngCordova', 'ngCookies', 'app.controllers', 'ap
             });
           });
         }
+        validate = true;
     });
       /*end valida el uuid y redirecciona a select*/
   });

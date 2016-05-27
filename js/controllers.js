@@ -17,6 +17,39 @@ angular.module('app.controllers', [])
 })
 
 .controller('homeCtrl', function($scope, $cordovaDevice, $state, $q, FBService, $ionicLoading, UserService, $http, $ionicPopup) {
+	ionic.Platform.ready(function(){
+		$ionicLoading.show({
+	  		template: 'Cargando...'
+		});
+
+		var InterValidat = setInterval(function(){
+			if(validate){
+				clearInterval(InterValidat);
+				$ionicLoading.hide();
+				var myPopup = $ionicPopup.show({//ALERT
+						        template: '',
+						        title: 'Uso de la aplicación Heladero D\'nofrio',
+						        subTitle: 'Al activar el botón Usted acepta que la aplicación puede usar las cordenadas de ubicación de su dispositivo móvil para poder ser encontrado por los clientes de D\'nofrio.<br><b>ESTA APLICACIÓN SOLO ESTARÁ DISPONIBLE PARA LOS DISTRITOS DE MIRAFLORES Y SAN ISIDRO.</b>',
+						        buttons: [
+						            { 	text: 'Cancelar', 
+						            	type: 'button-negative', 
+						            	onTap: function(e) {
+											ionic.Platform.exitApp();
+						                }
+						            },
+						            {
+						               	text: 'Aceptar',
+						               	type: 'button-positive',
+						               	onTap: function(e) {
+
+						               	}
+						            }
+						        ]
+						    });
+			}
+		}, 300);
+	});
+
 	var fbLoginSuccess = function(response) {
 		    if (!response.authResponse){
 		      	fbLoginError("Cannot find the authResponse");
@@ -34,11 +67,14 @@ angular.module('app.controllers', [])
 					email: profileInfo.email,
 	        		picture : "https://graph.facebook.com/" + authResponse.userID + "/picture?type=large"
 	      		});
-	      		$ionicLoading.hide();
 	      		console.log(skipRegister);
 
-	    	}, function(fail){
+	      		if(skipRegister)
+					$state.go('menu.select');
+				else
+					$state.go('register');
 
+	    	}, function(fail){
 	      		console.log('profile info fail', fail);
 	    	});
 		},
@@ -51,40 +87,23 @@ angular.module('app.controllers', [])
 
 	    	facebookConnectPlugin.api('/me?fields=email,name&access_token=' + authResponse.accessToken, null,
 	      		function (response) {
+	      			console.log(authResponse.accessToken);
 					console.log(response);
 	        		info.resolve(response);
 	      		},
 	      		function (response) {
+	      			console.log(authResponse.accessToken);
 					console.log(response);
 	        		info.reject(response);
 	      		}
 	    	);
 	    	return info.promise;
-	  	},
-	  	myPopup = $ionicPopup.show({//ALERT
-	        template: '',
-	        title: 'Uso de la aplicación Heladero D\'nofrio',
-	        subTitle: 'Al activar el botón Usted acepta que la aplicación puede usar las cordenadas de ubicación de su dispositivo móvil para poder ser encontrado por los clientes de D\'nofrio.<br><b>ESTA APLICACIÓN SOLO ESTARÁ DISPONIBLE PARA LOS DISTRITOS DE MIRAFLORES Y SAN ISIDRO.</b>',
-	        buttons: [
-	            { 	text: 'Cancelar', 
-	            	type: 'button-negative', 
-	            	onTap: function(e) {
-						ionic.Platform.exitApp();
-	                }
-	            },
-	            {
-	               	text: 'Aceptar',
-	               	type: 'button-positive',
-	               	onTap: function(e) {
-
-	               	}
-	            }
-	        ]
-	    });
+	  	};
 
 	$scope.facebookSignIn = function() {
-		$('#loading').show();
-        $('#btnFbConnect').hide();
+		$ionicLoading.show({
+	  		template: 'Autenticando...'
+		});
 	    facebookConnectPlugin.getLoginStatus(function(success){
 	      	if(success.status === 'connected'){
 
@@ -106,24 +125,23 @@ angular.module('app.controllers', [])
 							picture : "https://graph.facebook.com/" + success.authResponse.userID + "/picture?type=large"
 						});
 						console.log(skipRegister);
+						//validate device
+						$ionicLoading.hide();
 						if(skipRegister)
 							$state.go('menu.select');
 						else
 							$state.go('register');
 
 					}, function(fail){
-						console.log('profile info fail', fail);
+						console.log(fail);
 					});
 				}else{
+					$ionicLoading.hide();
 					$state.go('register');
 				}
 	      	}else{
 				console.log('getLoginStatus', success.status);
-
-				$ionicLoading.show({
-	          		template: 'Autenticando...'
-	        	});
-
+				$ionicLoading.hide();
 	        	facebookConnectPlugin.login(['email', 'public_profile'], fbLoginSuccess, fbLoginError);
 	      	}
 	    });
